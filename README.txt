@@ -32,7 +32,7 @@ RubyGem:
   
 Git:
 
-  git clone git://github.com/mbleigh/mash
+  git clone git://github.com/mbleigh/mash.git
 
 == LICENSE:
 
