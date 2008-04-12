@@ -25,6 +25,7 @@ RubyGem:
   sudo gem install mash
   
 Git:
+
   git clone git://github.com/mbleigh/mash
 
 == LICENSE:
