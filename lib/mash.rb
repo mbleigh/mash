@@ -4,6 +4,14 @@
 # without the overhead of actually doing so. Think of it as OpenStruct
 # with some additional goodies.
 #
+# A Mash will look at the methods you pass it and perform operations
+# based on the following rules:
+# 
+# * No punctuation: Returns the value of the hash for that key, or nil if none exists.
+# * Assignment (<tt>=</tt>): Sets the attribute of the given method name.
+# * Existence (<tt>?</tt>): Returns true or false depending on whether that key has been set.
+# * Bang (<tt>!</tt>): Forces the existence of this key, used for deep Mashes. Think of it as "touch" for mashes.
+#
 # == Basic Example
 #    
 #   mash = Mash.new
@@ -21,8 +29,18 @@
 #   mash.f.first.g # => 44
 #   mash.f.last # => 12
 #
+# == Bang Example
+#
+#   mash = Mash.new
+#   mash.author # => nil
+#   mash.author! # => <Mash>
+#   
+#   mash = Mash.new
+#   mash.author!.name = "Michael Bleigh"
+#   mash.author # => <Mash name="Michael Bleigh">
+#
 class Mash < Hash
-  VERSION = '0.0.1'
+  VERSION = '0.0.2'
   
   # If you pass in an existing hash, it will
   # convert it to a Mash including recursively
@@ -66,16 +84,19 @@ class Mash < Hash
       self[match[1]] = args.first
     elsif (match = method_name.to_s.match(/(.*)\?$/)) && args.size == 0
       key?(match[1])
+    elsif (match = method_name.to_s.match(/(.*)!$/)) && args.size == 0
+      return self[match[1]] if key?(match[1])
+      self[match[1]] = Mash.new
     elsif keys.include?(method_name.to_s)
       self[method_name]
     elsif match = method_name.to_s.match(/^([a-z][a-z0-9A-Z_]+)$/)
-      Mash.new
+      nil
     else
       super
     end
   end
   
-  private
+  protected
   
   def mash_a_hash(hash) #:nodoc:
     hash.each do |k,v|
@@ -86,7 +107,10 @@ class Mash < Hash
           v = collect_mashed_hashes_in(v) if v.is_a?(Array)
       end
       
-      self[k] = v
+      # we use the method call instead of []= here so that
+      # it can be easily overridden for custom behavior in
+      # inheriting objects
+      self.send "#{k.to_s}=", v
     end
   end
   

@@ -37,6 +37,26 @@ describe Mash do
     @mash.to_s.should == @mash.inspect
   end
   
+  it "should return nil instead of raising an error for attribute-esque method calls" do
+    @mash.abc.should be_nil
+  end
+  
+  it "should return a Mash when passed a bang method to a non-existenct key" do
+    @mash.abc!.is_a?(Mash).should be_true
+  end
+  
+  it "should return the existing value when passed a bang method for an existing key" do
+    @mash.name = "Bob"
+    @mash.name!.should == "Bob"
+  end
+  
+  it "should allow for multi-level assignment through bang methods" do
+    @mash.author!.name = "Michael Bleigh"
+    @mash.author.should == Mash.new(:name => "Michael Bleigh")
+    @mash.author!.website!.url = "http://www.mbleigh.com/"
+    @mash.author.website.should == Mash.new(:url => "http://www.mbleigh.com/")
+  end
+  
   context "#initialize" do
     it "should convert an existing hash to a Mash" do
       converted = Mash.new({:abc => 123, :name => "Bob"})

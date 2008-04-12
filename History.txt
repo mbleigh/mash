@@ -1,6 +1,9 @@
-=== 1.0.0 / 2008-04-11
+=== 0.0.2 / 2008-04-12
 
-* 1 major enhancement
+* Added bang(!) method support
+* No longer automatically multi-level assigning
+* Hash conversion now calls methods instead of []= to allow for overrides
 
-  * Birthday!
+=== 0.0.1 / 2008-04-12
 
+* Initial release

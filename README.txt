@@ -10,13 +10,19 @@ be used in RESTful API libraries to provide easy object-like access
 to JSON and XML parsed hashes.
 
 == SYNOPSIS:
-
+  
   mash = Mash.new
   mash.name? # => false
+  mash.name # => nil
   mash.name = "My Mash"
   mash.name # => "My Mash"
   mash.name? # => true
   mash.inspect # => <Mash name="My Mash">
+  
+  mash = Mash.new
+  # use bang methods for multi-level assignment
+  mash.author!.name = "Michael Bleigh"
+  mash.author # => <Mash name="Michael Bleigh">
 
 == INSTALL:
 
