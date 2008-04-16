@@ -40,7 +40,7 @@
 #   mash.author # => <Mash name="Michael Bleigh">
 #
 class Mash < Hash
-  VERSION = '0.0.2'
+  VERSION = '0.0.3'
   
   # If you pass in an existing hash, it will
   # convert it to a Mash including recursively
@@ -55,15 +55,35 @@ class Mash < Hash
     self["id"] ? self["id"] : super
   end
   
-  def [](key) #:nodoc:
-    key = key.to_s
-    return Mash.new unless key?(key)    
-    super
+  alias_method :regular_reader, :[]
+  alias_method :regular_writer, :[]=
+  
+  # Retrieves an attribute set in the Mash. Will convert
+  # any key passed in to a string before retrieving.
+  def [](key)
+    key = convert_key(key)
+    regular_reader(key)
   end
   
+  # Sets an attribute in the Mash. Key will be converted to
+  # a string before it is set.
   def []=(key,value) #:nodoc:
     key = key.to_s
-    super
+    regular_writer(key,value)
+  end
+  
+  # This is the bang method reader, it will return a new Mash
+  # if there isn't a value already assigned to the key requested.
+  def initializing_reader(key)
+    return self[key] if key?(key)
+    self[key] = Mash.new
+  end
+  
+  alias_method :regular_inspect, :inspect
+  
+  alias_method :picky_key?, :key?
+  def key?(key)
+    picky_key?(convert_key(key))
   end
   
   # Prints out a pretty object-like string of the
@@ -77,7 +97,7 @@ class Mash < Hash
     ret
   end
   
-  alias :to_s :inspect
+  alias_method :to_s, :inspect
   
   def method_missing(method_name, *args) #:nodoc:
     if (match = method_name.to_s.match(/(.*)=$/)) && args.size == 1
@@ -85,8 +105,7 @@ class Mash < Hash
     elsif (match = method_name.to_s.match(/(.*)\?$/)) && args.size == 0
       key?(match[1])
     elsif (match = method_name.to_s.match(/(.*)!$/)) && args.size == 0
-      return self[match[1]] if key?(match[1])
-      self[match[1]] = Mash.new
+      initializing_reader(match[1])
     elsif keys.include?(method_name.to_s)
       self[method_name]
     elsif match = method_name.to_s.match(/^([a-z][a-z0-9A-Z_]+)$/)
@@ -97,6 +116,10 @@ class Mash < Hash
   end
   
   protected
+  
+  def convert_key(key) #:nodoc:
+    key.to_s
+  end
   
   def mash_a_hash(hash) #:nodoc:
     hash.each do |k,v|
@@ -125,5 +148,14 @@ class Mash < Hash
           value
       end
     end
+  end
+end
+
+class Hash
+  # Returns a new Mash initialized from this Hash.
+  def to_mash
+    mash = Mash.new(self)
+    mash.default = default
+    mash
   end
 end

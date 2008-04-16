@@ -50,6 +50,10 @@ describe Mash do
     @mash.name!.should == "Bob"
   end
   
+  it "#initializing_reader should return a Mash when passed a non-existent key" do
+    @mash.initializing_reader(:abc).is_a?(Mash).should be_true
+  end
+  
   it "should allow for multi-level assignment through bang methods" do
     @mash.author!.name = "Michael Bleigh"
     @mash.author.should == Mash.new(:name => "Michael Bleigh")
@@ -76,5 +80,13 @@ describe Mash do
       converted.a.first.b.should == 12
       converted.a.last.should == 23
     end
+  end
+end
+
+describe Hash do
+  it "should be convertible to a Mash" do
+    mash = {:some => "hash"}.to_mash
+    mash.is_a?(Mash).should be_true
+    mash.some.should == "hash"
   end
 end
