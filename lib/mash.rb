@@ -47,12 +47,28 @@ class Mash < Hash
   # descending into arrays and hashes, converting
   # them as well.
   def initialize(source_hash = nil)
-    mash_a_hash(source_hash) if source_hash
+    deep_update(source_hash) if source_hash
     super(nil)
   end
   
   def id #:nodoc:
     self["id"] ? self["id"] : super
+  end
+  
+  # Borrowed from Merb's Mash object.
+  #
+  # ==== Parameters
+  # key<Object>:: The default value for the mash. Defaults to nil.
+  #
+  # ==== Alternatives
+  # If key is a Symbol and it is a key in the mash, then the default value will
+  # be set to the value matching the key.
+  def default(key = nil) 
+    if key.is_a?(Symbol) && include?(key = convert_key(key)) 
+      self[key] 
+    else 
+      super 
+    end 
   end
   
   alias_method :regular_reader, :[]
@@ -68,8 +84,8 @@ class Mash < Hash
   # Sets an attribute in the Mash. Key will be converted to
   # a string before it is set.
   def []=(key,value) #:nodoc:
-    key = key.to_s
-    regular_writer(key,value)
+    key = convert_key(key)
+    regular_writer(key,convert_value(value))
   end
   
   # This is the bang method reader, it will return a new Mash
@@ -77,6 +93,11 @@ class Mash < Hash
   def initializing_reader(key)
     return self[key] if key?(key)
     self[key] = Mash.new
+  end
+  
+  # Duplicates the current mash as a new mash.
+  def dup
+    Mash.new(self)
   end
   
   alias_method :regular_inspect, :inspect
@@ -96,8 +117,53 @@ class Mash < Hash
     ret << ">"
     ret
   end
-  
   alias_method :to_s, :inspect
+  
+  # Performs a deep_update on a duplicate of the
+  # current mash.
+  def deep_merge(other_hash)
+    dup.deep_merge!(other_hash)
+  end
+  
+  # Recursively merges this mash with the passed
+  # in hash, merging each hash in the hierarchy.
+  def deep_update(other_hash)
+    stringified_hash = other_hash.stringify_keys
+    stringified_hash.each_pair do |k,v|
+      k = convert_key(k)
+      self[k] = self[k].to_mash if self[k].is_a?(Hash) unless self[k].is_a?(Mash)
+      if self[k].is_a?(Hash) && stringified_hash[k].is_a?(Hash)
+        self[k].deep_merge!(stringified_hash[k])
+      else
+        self.send(k + "=", convert_value(stringified_hash[k]))
+      end
+    end
+  end
+  alias_method :deep_merge!, :deep_update
+  
+  # ==== Parameters
+  # other_hash<Hash>::
+  # A hash to update values in the mash with. Keys will be
+  # stringified and Hashes will be converted to Mashes.
+  #
+  # ==== Returns
+  # Mash:: The updated mash.
+  def update(other_hash)
+    other_hash.each_pair do |key, value|
+      if respond_to?(convert_key(key) + "=")
+        self.send(convert_key(key) + "=", convert_value(value))
+      else
+        regular_writer(convert_key(key), convert_value(value))
+      end
+    end
+    self
+  end
+  alias_method :merge!, :update
+  
+  # Converts a mash back to a hash (with stringified keys)
+  def to_hash
+    Hash.new(default).merge(self)
+  end
   
   def method_missing(method_name, *args) #:nodoc:
     if (match = method_name.to_s.match(/(.*)=$/)) && args.size == 1
@@ -121,32 +187,14 @@ class Mash < Hash
     key.to_s
   end
   
-  def mash_a_hash(hash) #:nodoc:
-    hash.each do |k,v|
-      case v
-        when Hash
-          v = Mash.new(v) if v.is_a?(Hash)
-        when Array
-          v = collect_mashed_hashes_in(v) if v.is_a?(Array)
-      end
-      
-      # we use the method call instead of []= here so that
-      # it can be easily overridden for custom behavior in
-      # inheriting objects
-      self.send "#{k.to_s}=", v
-    end
-  end
-  
-  def collect_mashed_hashes_in(array) #:nodoc:
-    array.collect do |value|
-      case value
-        when Hash
-          Mash.new(value)
-        when Array
-          collect_mashed_hashes_in(value)
-        else
-          value
-      end
+  def convert_value(value) #:nodoc:
+    case value
+      when Hash
+        value.is_a?(Mash) ? value : value.to_mash
+      when Array
+        value.collect{ |e| convert_value(e) }
+      else
+        value
     end
   end
 end
@@ -157,5 +205,22 @@ class Hash
     mash = Mash.new(self)
     mash.default = default
     mash
+  end
+  
+  # Returns a duplicate of the current hash with
+  # all of the keys converted to strings.
+  def stringify_keys
+    dup.stringify_keys!
+  end
+  
+  # Converts all of the keys to strings
+  def stringify_keys!
+    keys.each{|k| 
+      v = delete(k)
+      self[k.to_s] = v
+      v.stringify_keys! if v.is_a?(Hash)
+      v.each{|p| p.stringify_keys! if p.is_a?(Hash)} if v.is_a?(Array)
+    }
+    self
   end
 end
