@@ -64,7 +64,7 @@ class Mash < Hash
   # If key is a Symbol and it is a key in the mash, then the default value will
   # be set to the value matching the key.
   def default(key = nil) 
-    if key.is_a?(Symbol) && include?(key = convert_key(key)) 
+    if key.is_a?(Symbol) && key?(key) 
       self[key] 
     else 
       super 
@@ -172,10 +172,10 @@ class Mash < Hash
       key?(match[1])
     elsif (match = method_name.to_s.match(/(.*)!$/)) && args.size == 0
       initializing_reader(match[1])
-    elsif keys.include?(method_name.to_s)
+    elsif key?(method_name)
       self[method_name]
     elsif match = method_name.to_s.match(/^([a-z][a-z0-9A-Z_]+)$/)
-      nil
+      default
     else
       super
     end
