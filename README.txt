@@ -26,13 +26,23 @@ to JSON and XML parsed hashes.
 
 == INSTALL:
 
-RubyGem:
+Gem:
 
-  sudo gem install mash
+Mash is hosted on the GitHub gem repository, so if you haven't already:
+
+  gem sources -a http://gems.github.com/  
+  sudo gem install mbleigh-mash
   
 Git:
 
   git clone git://github.com/mbleigh/mash.git
+  
+== RESOURCES
+
+If you encounter any problems or have ideas for new features 
+please report them at the Lighthouse project for Mash: 
+
+http://mbleigh.lighthouseapp.com/projects/10112-mash
 
 == LICENSE:
 
