@@ -46,7 +46,8 @@ http://mbleigh.lighthouseapp.com/projects/10112-mash
 
 == LICENSE:
 
-Copyright (c) 2008 Michael Bleigh
+Copyright (c) 2008 Michael Bleigh (http://mbleigh.com/) 
+and Intridea Inc. (http://intridea.com/), released under the MIT license
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
