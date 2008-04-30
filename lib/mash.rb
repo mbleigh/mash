@@ -128,14 +128,14 @@ class Mash < Hash
   # Recursively merges this mash with the passed
   # in hash, merging each hash in the hierarchy.
   def deep_update(other_hash)
-    stringified_hash = other_hash.stringify_keys
-    stringified_hash.each_pair do |k,v|
+    other_hash = other_hash.stringify_keys unless other_hash.is_a?(Mash)
+    other_hash.each_pair do |k,v|
       k = convert_key(k)
       self[k] = self[k].to_mash if self[k].is_a?(Hash) unless self[k].is_a?(Mash)
-      if self[k].is_a?(Hash) && stringified_hash[k].is_a?(Hash)
-        self[k].deep_merge!(stringified_hash[k])
+      if self[k].is_a?(Hash) && other_hash[k].is_a?(Hash)
+        self[k].deep_merge!(other_hash[k])
       else
-        self.send(k + "=", convert_value(stringified_hash[k]))
+        self.send(k + "=", convert_value(other_hash[k]))
       end
     end
   end
