@@ -69,6 +69,12 @@ describe Mash do
     @mash.details.email.should == "michael@intridea.com"
   end
   
+  it "should convert hash assignments into mashes" do
+    @mash.details = {:email => 'randy@asf.com', :address => {:state => 'TX'} }
+    @mash.details.email.should == 'randy@asf.com'
+    @mash.details.address.state.should == 'TX'
+  end
+  
   context "#initialize" do
     it "should convert an existing hash to a Mash" do
       converted = Mash.new({:abc => 123, :name => "Bob"})
