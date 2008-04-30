@@ -88,6 +88,13 @@ describe Mash do
       converted.a.first.b.should == 12
       converted.a.last.should == 23
     end
+    
+    it "should convert an existing Mash into a Mash" do
+      initial = Mash.new(:name => 'randy')
+      copy = Mash.new(initial)
+      initial.name.should == copy.name      
+    end
+    
   end
 end
 
