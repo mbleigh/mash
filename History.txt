@@ -1,3 +1,7 @@
+=== 0.0.5 / 2008-04-29
+
+* [bugfix] Mashes do not infinite loop when initialized with another Mash.
+
 === 0.0.4 / 2008-04-25
 
 * Setting up for GitHub gem hosting instead of Rubyforge.
