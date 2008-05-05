@@ -96,9 +96,12 @@ describe Mash do
     end
     
     it "should convert an existing Mash into a Mash" do
-      initial = Mash.new(:name => 'randy')
+      initial = Mash.new(:name => 'randy', :address => {:state => 'TX'})
       copy = Mash.new(initial)
       initial.name.should == copy.name      
+      initial.object_id.should_not == copy.object_id
+      copy.address.state.should == 'TX'
+      copy.address.object_id.should_not == initial.address.object_id
     end
     
   end
