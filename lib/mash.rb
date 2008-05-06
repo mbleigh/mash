@@ -40,8 +40,6 @@
 #   mash.author # => <Mash name="Michael Bleigh">
 #
 class Mash < Hash
-  VERSION = '0.0.3'
-  
   # If you pass in an existing hash, it will
   # convert it to a Mash including recursively
   # descending into arrays and hashes, converting
@@ -95,18 +93,18 @@ class Mash < Hash
     self[key] = Mash.new
   end
   
+  alias_method :regular_dup, :dup  
   # Duplicates the current mash as a new mash.
   def dup
     Mash.new(self)
   end
-  
-  alias_method :regular_inspect, :inspect
   
   alias_method :picky_key?, :key?
   def key?(key)
     picky_key?(convert_key(key))
   end
   
+  alias_method :regular_inspect, :inspect  
   # Prints out a pretty object-like string of the
   # defined attributes.
   def inspect
@@ -128,14 +126,15 @@ class Mash < Hash
   # Recursively merges this mash with the passed
   # in hash, merging each hash in the hierarchy.
   def deep_update(other_hash)
-    other_hash = other_hash.stringify_keys unless other_hash.is_a?(Mash)
+    other_hash = other_hash.to_hash if other_hash.is_a?(Mash)
+    other_hash = other_hash.stringify_keys
     other_hash.each_pair do |k,v|
       k = convert_key(k)
       self[k] = self[k].to_mash if self[k].is_a?(Hash) unless self[k].is_a?(Mash)
       if self[k].is_a?(Hash) && other_hash[k].is_a?(Hash)
-        self[k].deep_merge!(other_hash[k])
+        self[k] = self[k].deep_merge(other_hash[k]).dup
       else
-        self.send(k + "=", convert_value(other_hash[k]))
+        self.send(k + "=", convert_value(other_hash[k],true))
       end
     end
   end
@@ -187,9 +186,10 @@ class Mash < Hash
     key.to_s
   end
   
-  def convert_value(value) #:nodoc:
+  def convert_value(value, dup=false) #:nodoc:
     case value
       when Hash
+        value = value.dup if value.is_a?(Mash) && dup
         value.is_a?(Mash) ? value : value.to_mash
       when Array
         value.collect{ |e| convert_value(e) }

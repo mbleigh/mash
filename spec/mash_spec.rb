@@ -101,6 +101,8 @@ describe Mash do
       initial.name.should == copy.name      
       initial.object_id.should_not == copy.object_id
       copy.address.state.should == 'TX'
+      copy.address.state = 'MI'
+      initial.address.state.should == 'TX'
       copy.address.object_id.should_not == initial.address.object_id
     end
     
