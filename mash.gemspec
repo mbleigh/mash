@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = "mash"
-  s.version = "0.0.5"
-  s.date = "2008-04-26"
+  s.version = "0.0.6"
+  s.date = "2008-07-22"
   s.summary = "An extended Hash that gives simple pseudo-object functionality that can be built from hashes and easily extended"  
   s.email = "michael@intridea.com"
   s.homepage = "http://github.com/mbleigh/mash"
