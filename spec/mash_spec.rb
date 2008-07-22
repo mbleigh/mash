@@ -106,6 +106,13 @@ describe Mash do
       copy.address.object_id.should_not == initial.address.object_id
     end
     
+    it "should accept a default block" do
+      initial = Mash.new { |h,i| h[i] = []}
+      initial.default_proc.should_not be_nil
+      initial.default.should be_nil
+      initial.test.should == []
+      initial.test?.should be_true
+    end
   end
 end
 

@@ -44,9 +44,9 @@ class Mash < Hash
   # convert it to a Mash including recursively
   # descending into arrays and hashes, converting
   # them as well.
-  def initialize(source_hash = nil)
+  def initialize(source_hash = nil, &blk)
     deep_update(source_hash) if source_hash
-    super(nil)
+    super(&blk)
   end
   
   def id #:nodoc:
@@ -65,7 +65,7 @@ class Mash < Hash
     if key.is_a?(Symbol) && key?(key) 
       self[key] 
     else 
-      super 
+      key ? super : super()
     end 
   end
   
@@ -174,7 +174,7 @@ class Mash < Hash
     elsif key?(method_name)
       self[method_name]
     elsif match = method_name.to_s.match(/^([a-z][a-z0-9A-Z_]+)$/)
-      default
+      default(method_name)
     else
       super
     end
