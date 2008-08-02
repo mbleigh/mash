@@ -49,6 +49,8 @@ class Mash < Hash
     super(&blk)
   end
   
+  class << self; alias [] new; end
+
   def id #:nodoc:
     self["id"] ? self["id"] : super
   end
